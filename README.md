@@ -2,69 +2,224 @@
 
 ## Project Overview
 
-Task Dashboard is a React + TypeScript mini project management board that lets users create, edit, delete, filter, and move tasks between statuses. The app uses React Router for navigation, React Context + useReducer for global state, and localStorage for persistence.
+Task Dashboard is a React + TypeScript task board with a separate backend API. The frontend supports task creation, editing, deletion, filtering, and drag-and-drop status updates. The backend provides authenticated task persistence with SQLite, JWT, and bcrypt.
 
 ## Features
 
-- Board view with three status columns: To Do, In Progress, and Done
-- Drag-and-drop task movement using `@hello-pangea/dnd`
-- Task creation and editing with reusable form components
-- Delete confirmation dialog for task removal
-- Priority and assignee filtering
-- Responsive layout for desktop, tablet, and mobile
-- LocalStorage persistence across page reloads
-- Material UI theme and polished visual styling
+- Task board with To Do, In Progress, and Done columns
+- Create, edit, and delete tasks
+- Drag-and-drop task movement between statuses
+- Priority and status filtering
+- Frontend persistence using localStorage
+- Backend persistence and authenticated task APIs
+- JWT-based authentication with register/login
+- User-isolated task access
 
-## Setup Instructions
+## Tech Stack
 
-1. Navigate to the project directory:
+- Frontend: React, TypeScript, Vite, Material UI, React Router
+- Backend: Node.js, Express, TypeScript, SQLite, better-sqlite3, JWT, bcrypt
+- Testing: Vitest for frontend, Jest + Supertest for backend
+- Package manager: npm
 
-```bash
-cd "C:/Users/Jayesh Phale/task-dashboard"
+## Folder Structure
+
+```
+.
+├── backend/                # Node.js/Express backend API
+│   ├── src/
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── .env.example
+├── src/                    # frontend React app
+├── public/
+├── package.json            # frontend dependencies and scripts
+├── tsconfig.json
+├── vite.config.ts
+└── README.md
 ```
 
-2. Install dependencies:
+## Installation
+
+### Frontend
 
 ```bash
 npm install
 ```
 
-3. Start the development server:
+### Backend
+
+```bash
+cd backend
+npm install
+```
+
+## Environment Variables
+
+Copy the backend template and set a secure JWT secret.
+
+```bash
+cd backend
+cp .env.example .env
+```
+
+Backend variables:
+
+- `PORT` — Server port (default: `5000`)
+- `JWT_SECRET` — JWT signing secret
+- `NODE_ENV` — Environment mode (`development` or `production`)
+
+## Running Frontend
 
 ```bash
 npm run dev
 ```
 
-4. Run tests:
+Open the app at `http://localhost:5173`.
+
+## Running Backend
 
 ```bash
-npm run test
+cd backend
+npm run dev
 ```
 
-## Architecture Decisions
+Backend runs on `http://localhost:5000` by default.
 
-- **React Context + useReducer**: Chosen for a lightweight global state solution with clear action patterns and predictable task updates.
-- **Custom hooks**: `useTasks` and `useFilteredTasks` keep logic reusable and avoid prop drilling across component boundaries.
-- **Separation of concerns**: Pages manage layout, while components encapsulate reusable UI logic for cards, columns, dialogs, and forms.
-- **LocalStorage persistence**: Ensures the board state remains available after reload without a backend dependency.
+## API Documentation
 
-## Why React Context instead of Zustand
+### Base URL
 
-React Context + `useReducer` keeps the project dependency footprint small and aligns with the assignment requirement. It also provides a built-in pattern that is easy to reason about, especially in a medium-sized task dashboard where state updates are grouped into a fixed set of actions.
+`http://localhost:5000`
 
-## Trade-offs
+### Authentication
 
-- The app uses localStorage instead of a remote API to keep the experience fast and self-contained.
-- Drag-and-drop order is handled at the status level instead of preserving cross-column list ordering for simplicity.
-- The current form validation is intentionally straightforward and focused on required fields and due date restrictions.
+#### Register
+
+`POST /auth/register`
+
+Body:
+
+```json
+{
+  "name": "Jane Doe",
+  "email": "jane@example.com",
+  "password": "password123"
+}
+```
+
+Success response:
+
+```json
+{
+  "success": true,
+  "data": {
+    "user": {
+      "id": 1,
+      "name": "Jane Doe",
+      "email": "jane@example.com"
+    },
+    "token": "..."
+  }
+}
+```
+
+#### Login
+
+`POST /auth/login`
+
+Body:
+
+```json
+{
+  "email": "jane@example.com",
+  "password": "password123"
+}
+```
+
+### Tasks
+
+All task requests require an Authorization header:
+
+```
+Authorization: Bearer <token>
+```
+
+#### Get all tasks
+
+`GET /tasks`
+
+#### Get a task
+
+`GET /tasks/:id`
+
+#### Create a task
+
+`POST /tasks`
+
+Body:
+
+```json
+{
+  "title": "Test task",
+  "description": "Task details",
+  "priority": "medium",
+  "status": "todo",
+  "dueDate": "2025-01-15"
+}
+```
+
+#### Update a task
+
+`PUT /tasks/:id`
+
+Body (any subset):
+
+```json
+{
+  "title": "Updated title",
+  "status": "done"
+}
+```
+
+#### Delete a task
+
+`DELETE /tasks/:id`
+
+## Testing
+
+### Frontend
+
+```bash
+npm test
+```
+
+### Backend
+
+```bash
+cd backend
+npm test
+```
+
+## State Management Choice and Why
+
+The frontend uses React Context + `useReducer`. This keeps dependencies minimal, provides a predictable action-based state flow, and avoids prop drilling for this medium-sized task board.
+
+## Trade-offs / Shortcuts
+
+- The frontend uses localStorage instead of a remote API for persistence.
+- Drag-and-drop ordering is managed by status column rather than full list ordering.
+- Form validation is straightforward and focuses on required fields.
+- The backend is contained in `backend/` so API behavior is separated from frontend state.
 
 ## Future Improvements
 
-- Add inline task comments and attachments
-- Support task sorting and due date reminders
-- Add dark mode and custom workspace themes
-- Introduce a backend for team collaboration and real-time updates
+- Add real-time collaboration and shared workspaces
+- Add task comments, attachments, and reminders
+- Add dark mode and workspace themes
+- Add backend persistence for the frontend app
+- Add more advanced filtering and search
 
 ## AI Usage
 
-I used GitHub Copilot and ChatGPT for code suggestions, scaffolding assistance, and refactoring ideas. All generated code was reviewed, tested, and integrated manually.
+GitHub Copilot and ChatGPT were used for code suggestions, scaffolding, and refactoring ideas. All generated suggestions were reviewed and integrated manually.
